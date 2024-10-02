@@ -3,8 +3,6 @@
 
 # Various set of customise functions needed for embedding
 import FWCore.ParameterSet.Config as cms
-from Configuration.Eras.Modifier_run2_common_cff import run2_common
-from Configuration.Eras.Modifier_run3_common_cff import run3_common
 from PhysicsTools.NanoAOD.common_cff import ExtVar
 
 ################################ Customizer for skimming ###########################
@@ -236,41 +234,6 @@ to_bemanipulate.append(
     )
 )
 
-# add some collections for run2
-# The era Modifier/ModifierChain is specified with the cmsDriver `--era` option or the cms.Process('NAME', era=...) constructor in the python config.
-# The `Modifier.toModify` method is executed if the Modifier is in the ModifierChain. (see https://github.com/cms-sw/cmssw/blob/master/FWCore/ParameterSet/python/Config.py#L1831)
-# The Run3 ModifierChain is based on the Run2 ModifierChain. Therefore the `run2_common` Modifier is included in both ModifierChains.
-# Those Modifiers allow bool operators to combine them. With `(run2_common & ~run3_common)` the `toModify` function is only executed if the era ModifierChain contains `run2_common` but not `run3_common`.
-(run2_common & ~run3_common).toModify(
-    to_bemanipulate,
-    lambda l: l.extend(
-        [
-            module_manipulate(
-                module_name="conversionStepTracks",
-                manipulator_name="Track",
-                steps=["SIM", "MERGE"],
-            ),
-            module_manipulate(
-                module_name="ckfInOutTracksFromConversions",
-                manipulator_name="Track",
-                steps=["SIM", "MERGE"],
-            ),
-            module_manipulate(
-                module_name="electronMergedSeeds",
-                manipulator_name="ElectronSeed",
-                steps=["SIM", "MERGE"],
-            ),
-            module_manipulate(
-                module_name="ecalDrivenElectronSeeds",
-                manipulator_name="EcalDrivenElectronSeed",
-                steps=["SIM", "MERGE"],
-            ),
-            module_manipulate(module_name="hbheprereco", manipulator_name="HBHERecHit"),
-            module_manipulate(module_name="zdcreco", manipulator_name="ZDCRecHit"),
-        ]
-    ),
-)
-
 
 def modify_outputModules(process, keep_drop_list=[], module_veto_list=[]):
     outputModulesList = [key for key, value in process.outputModules.items()]
@@ -361,7 +324,7 @@ def keepCleaned(dataTier):
         "keep *_l1extraParticles_*_" + dataTier,
         "keep TrajectorySeeds_*_*_*",
         "keep recoElectronSeeds_*_*_*",
-        "drop recoIsoDepositedmValueMap_muIsoDepositTk_*_*",
+        "drop recoIsoDepositedmValueMap_muIsoDepositTk_*_*" ,
         "drop recoIsoDepositedmValueMap_muIsoDepositTkDisplaced_*_*",
         "drop *_ctppsProtons_*_*",
         "drop *_ctppsLocalTrackLiteProducer_*_*",
@@ -590,9 +553,7 @@ def customiseGenerator_preHLT(process, changeProcessname=True, reselect=False):
         "Correcting Vertex in genEvent to one from input. Replaced 'VtxSmeared' with the Corrector."
     )
 
-    #### Disable noise simulation ####
-    # Castor was a detector in CMS till 2018.
-    (run2_common & ~run3_common).toModify(process, lambda p: setattr(p.mix.digitizers.castor, "doNoise", cms.bool(False)))
+    # Disable noise simulation
     process.mix.digitizers.ecal.doESNoise = cms.bool(False)
     process.mix.digitizers.ecal.doENoise = cms.bool(False)
 
@@ -645,18 +606,6 @@ def customiseGenerator_HLT(process, changeProcessname=True, reselect=False):
     process.firstStepPrimaryVerticesUnsorted = process.embeddingHltPixelVertices.clone()
     process.firstStepPrimaryVerticesPreSplitting = (
         process.embeddingHltPixelVertices.clone()
-    )
-
-    # Replace the original detector state filters in the HLT with a dummy module with 100% efficiency.
-    # Those original filters have a efficiency of 0% for embedding samples.
-    # This is due to the fact that the simulation of the tau decay happens in an empty detector.
-    # For more info see https://github.com/cms-sw/cmssw/pull/47299#discussion_r1949023230
-    process.hltPixelTrackerHVOn = cms.EDFilter("HLTBool",
-        result = cms.bool(True)
-    )
-
-    process.hltStripTrackerHVOn = cms.EDFilter("HLTBool",
-        result = cms.bool(True)
     )
 
     process = customisoptions(process)
