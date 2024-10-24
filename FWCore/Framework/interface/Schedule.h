@@ -58,7 +58,6 @@
 */
 
 #include "DataFormats/Provenance/interface/ModuleDescription.h"
-#include "DataFormats/Provenance/interface/BranchIDList.h"
 #include "FWCore/Common/interface/FWCoreCommonFwd.h"
 #include "FWCore/Framework/interface/ExceptionActions.h"
 #include "FWCore/Framework/interface/ExceptionHelpers.h"
@@ -109,7 +108,7 @@ namespace edm {
   class ExceptionCollector;
   class MergeableRunProductMetadata;
   class OutputModuleCommunicator;
-  class SignallingProductRegistryFiller;
+  class SignallingProductRegistry;
   class PreallocationConfiguration;
   class StreamSchedule;
   class GlobalSchedule;
@@ -117,6 +116,7 @@ namespace edm {
   class ModuleRegistry;
   class ModuleTypeResolverMaker;
   class ThinnedAssociationsHelper;
+  class SubProcessParentageHelper;
   class TriggerResultInserter;
   class PathStatusInserter;
   class EndPathStatusInserter;
@@ -132,7 +132,7 @@ namespace edm {
 
     Schedule(ParameterSet& proc_pset,
              service::TriggerNamesService const& tns,
-             SignallingProductRegistryFiller& pregistry,
+             SignallingProductRegistry& pregistry,
              ExceptionToActionTable const& actions,
              std::shared_ptr<ActivityRegistry> areg,
              std::shared_ptr<ProcessConfiguration const> processConfiguration,
@@ -141,12 +141,14 @@ namespace edm {
              ModuleTypeResolverMaker const* resolverMaker);
     void finishSetup(ParameterSet& proc_pset,
                      service::TriggerNamesService const& tns,
-                     SignallingProductRegistryFiller& preg,
+                     SignallingProductRegistry& preg,
                      BranchIDListHelper& branchIDListHelper,
                      ProcessBlockHelperBase& processBlockHelper,
                      ThinnedAssociationsHelper& thinnedAssociationsHelper,
+                     SubProcessParentageHelper const* subProcessParentageHelper,
                      std::shared_ptr<ActivityRegistry> areg,
                      std::shared_ptr<ProcessConfiguration> processConfiguration,
+                     bool hasSubprocesses,
                      PreallocationConfiguration const& prealloc,
                      ProcessContext const* processContext);
 
@@ -171,6 +173,7 @@ namespace edm {
     void beginJob(ProductRegistry const&,
                   eventsetup::ESRecordsToProductResolverIndices const&,
                   ProcessBlockHelperBase const&,
+                  PathsAndConsumesOfModulesBase const&,
                   ProcessContext const&);
     void endJob(ExceptionCollector& collector);
     void sendFwkSummaryToMessageLogger() const;
@@ -245,6 +248,18 @@ namespace edm {
                                      std::vector<ModuleDescription const*>& descriptions,
                                      unsigned int hint) const;
 
+    void fillModuleAndConsumesInfo(
+        std::vector<ModuleDescription const*>& allModuleDescriptions,
+        std::vector<std::pair<unsigned int, unsigned int>>& moduleIDToIndex,
+        std::array<std::vector<std::vector<ModuleDescription const*>>, NumBranchTypes>&
+            modulesWhoseProductsAreConsumedBy,
+        std::vector<std::vector<ModuleProcessName>>& modulesInPreviousProcessesWhoseProductsAreConsumedBy,
+        ProductRegistry const& preg) const;
+
+    void fillESModuleAndConsumesInfo(std::array<std::vector<std::vector<eventsetup::ComponentDescription const*>>,
+                                                kNumberOfEventSetupTransitions>& esModulesWhoseProductsAreConsumedBy,
+                                     eventsetup::ESRecordsToProductResolverIndices const&) const;
+
     /// Return the number of events this Schedule has tried to process
     /// (inclues both successes and failures, including failures due
     /// to exceptions during processing).
@@ -276,7 +291,7 @@ namespace edm {
     /// Returns true if successful.
     bool changeModule(std::string const& iLabel,
                       ParameterSet const& iPSet,
-                      const SignallingProductRegistryFiller& iRegistry,
+                      const SignallingProductRegistry& iRegistry,
                       eventsetup::ESRecordsToProductResolverIndices const&);
 
     /// Deletes module with label iLabel
@@ -285,7 +300,7 @@ namespace edm {
     void initializeEarlyDelete(std::vector<std::string> const& branchesToDeleteEarly,
                                std::multimap<std::string, std::string> const& referencesToBranches,
                                std::vector<std::string> const& modulesToSkip,
-                               edm::ProductRegistry const& preg);
+                               edm::SignallingProductRegistry const& preg);
 
     /// returns the collection of pointers to workers
     AllWorkers const& allWorkers() const;
@@ -296,7 +311,9 @@ namespace edm {
     void releaseMemoryPostLookupSignal();
 
   private:
-    void limitOutput(ParameterSet const& proc_pset, BranchIDLists const& branchIDLists);
+    void limitOutput(ParameterSet const& proc_pset,
+                     BranchIDLists const& branchIDLists,
+                     SubProcessParentageHelper const* subProcessParentageHelper);
 
     std::shared_ptr<TriggerResultInserter const> resultsInserter() const {
       return get_underlying_safe(resultsInserter_);

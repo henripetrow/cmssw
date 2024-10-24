@@ -25,6 +25,7 @@ WorkerT: Code common to all workers.
 
 namespace edm {
 
+  class ModuleProcessName;
   class ProductResolverIndexAndSkipBit;
   class ThinnedAssociationsHelper;
 
@@ -127,14 +128,28 @@ namespace edm {
     std::string workerType() const override;
     TaskQueueAdaptor serializeRunModule() override;
 
+    void modulesWhoseProductsAreConsumed(
+        std::array<std::vector<ModuleDescription const*>*, NumBranchTypes>& modules,
+        std::vector<ModuleProcessName>& modulesInPreviousProcesses,
+        ProductRegistry const& preg,
+        std::map<std::string, ModuleDescription const*> const& labelsToDesc) const override {
+      module_->modulesWhoseProductsAreConsumed(
+          modules, modulesInPreviousProcesses, preg, labelsToDesc, module_->moduleDescription().processName());
+    }
+
+    void esModulesWhoseProductsAreConsumed(
+        std::array<std::vector<eventsetup::ComponentDescription const*>*, kNumberOfEventSetupTransitions>& esModules,
+        eventsetup::ESRecordsToProductResolverIndices const& iPI) const override {
+      module_->esModulesWhoseProductsAreConsumed(esModules, iPI);
+    }
+
     void convertCurrentProcessAlias(std::string const& processName) override {
       module_->convertCurrentProcessAlias(processName);
     }
 
     std::vector<ModuleConsumesInfo> moduleConsumesInfos() const override;
-    std::vector<ModuleConsumesMinimalESInfo> moduleConsumesMinimalESInfos() const final {
-      return module_->moduleConsumesMinimalESInfos();
-    }
+    std::vector<ModuleConsumesESInfo> moduleConsumesESInfos(
+        eventsetup::ESRecordsToProductResolverIndices const& iPI) const override;
 
     void itemsToGet(BranchType branchType, std::vector<ProductResolverIndexAndSkipBit>& indexes) const override {
       module_->itemsToGet(branchType, indexes);

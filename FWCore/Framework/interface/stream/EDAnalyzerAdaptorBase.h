@@ -43,14 +43,14 @@
 
 namespace edm {
   class ModuleCallingContext;
+  class ModuleProcessName;
   class ProductResolverIndexHelper;
   class EDConsumerBase;
   class PreallocationConfiguration;
   class ProductResolverIndexAndSkipBit;
   class ActivityRegistry;
   class ThinnedAssociationsHelper;
-  class SignallingProductRegistryFiller;
-  struct ModuleConsumesMinimalESInfo;
+  class SignallingProductRegistry;
 
   namespace maker {
     template <typename T>
@@ -92,7 +92,7 @@ namespace edm {
       virtual bool wantsStreamLuminosityBlocks() const noexcept = 0;
 
       std::string workerType() const { return "WorkerT<EDAnalyzerAdaptorBase>"; }
-      void registerProductsAndCallbacks(EDAnalyzerAdaptorBase const*, SignallingProductRegistryFiller* reg);
+      void registerProductsAndCallbacks(EDAnalyzerAdaptorBase const*, SignallingProductRegistry* reg);
 
     protected:
       template <typename T>
@@ -121,10 +121,22 @@ namespace edm {
 
       const EDConsumerBase* consumer() const;
 
+      void modulesWhoseProductsAreConsumed(std::array<std::vector<ModuleDescription const*>*, NumBranchTypes>& modules,
+                                           std::vector<ModuleProcessName>& modulesInPreviousProcesses,
+                                           ProductRegistry const& preg,
+                                           std::map<std::string, ModuleDescription const*> const& labelsToDesc,
+                                           std::string const& processName) const;
+
+      void esModulesWhoseProductsAreConsumed(
+          std::array<std::vector<eventsetup::ComponentDescription const*>*, kNumberOfEventSetupTransitions>& esModules,
+          eventsetup::ESRecordsToProductResolverIndices const&) const;
+
       void convertCurrentProcessAlias(std::string const& processName);
 
       std::vector<ModuleConsumesInfo> moduleConsumesInfos() const;
-      std::vector<ModuleConsumesMinimalESInfo> moduleConsumesMinimalESInfos() const;
+      std::vector<ModuleConsumesESInfo> moduleConsumesESInfos(
+          eventsetup::ESRecordsToProductResolverIndices const&) const;
+
       void deleteModulesEarly();
 
     private:

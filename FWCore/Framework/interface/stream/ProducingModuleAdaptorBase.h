@@ -48,6 +48,7 @@
 namespace edm {
   class Event;
   class ModuleCallingContext;
+  class ModuleProcessName;
   class ProductResolverIndexHelper;
   class EDConsumerBase;
   class PreallocationConfiguration;
@@ -56,8 +57,7 @@ namespace edm {
   class ActivityRegistry;
   class WaitingTaskHolder;
   class ServiceWeakToken;
-  class SignallingProductRegistryFiller;
-  struct ModuleConsumesMinimalESInfo;
+  class SignallingProductRegistry;
 
   namespace maker {
     template <typename T>
@@ -99,7 +99,7 @@ namespace edm {
       virtual bool wantsStreamRuns() const noexcept = 0;
       virtual bool wantsStreamLuminosityBlocks() const noexcept = 0;
 
-      void registerProductsAndCallbacks(ProducingModuleAdaptorBase const*, SignallingProductRegistryFiller* reg);
+      void registerProductsAndCallbacks(ProducingModuleAdaptorBase const*, SignallingProductRegistry* reg);
 
       void itemsToGet(BranchType, std::vector<ProductResolverIndexAndSkipBit>&) const;
       void itemsMayGet(BranchType, std::vector<ProductResolverIndexAndSkipBit>&) const;
@@ -113,10 +113,21 @@ namespace edm {
       void releaseMemoryPostLookupSignal();
       virtual void selectInputProcessBlocks(ProductRegistry const&, ProcessBlockHelperBase const&) = 0;
 
+      void modulesWhoseProductsAreConsumed(std::array<std::vector<ModuleDescription const*>*, NumBranchTypes>& modules,
+                                           std::vector<ModuleProcessName>& modulesInPreviousProcesses,
+                                           ProductRegistry const& preg,
+                                           std::map<std::string, ModuleDescription const*> const& labelsToDesc,
+                                           std::string const& processName) const;
+
+      void esModulesWhoseProductsAreConsumed(
+          std::array<std::vector<eventsetup::ComponentDescription const*>*, kNumberOfEventSetupTransitions>& esModules,
+          eventsetup::ESRecordsToProductResolverIndices const&) const;
+
       void convertCurrentProcessAlias(std::string const& processName);
 
       std::vector<ModuleConsumesInfo> moduleConsumesInfos() const;
-      std::vector<ModuleConsumesMinimalESInfo> moduleConsumesMinimalESInfos() const;
+      std::vector<ModuleConsumesESInfo> moduleConsumesESInfos(
+          eventsetup::ESRecordsToProductResolverIndices const&) const;
 
       using ModuleToResolverIndicies =
           std::unordered_multimap<std::string, std::tuple<edm::TypeID const*, const char*, edm::ProductResolverIndex>>;
