@@ -9,6 +9,8 @@
 #include <iostream>
 #include <string>
 
+// TODO: add tests for HardwareResourcesDescription
+
 TEST_CASE("test ProcessConfiguration", "[ProcessConfiguration]") {
   edm::ParameterSet dummyPset;
   dummyPset.registerIt();

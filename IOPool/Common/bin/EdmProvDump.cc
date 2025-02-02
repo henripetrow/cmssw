@@ -54,14 +54,10 @@ namespace {
 
   class HistoryNode {
   public:
-    HistoryNode() = default;
+    HistoryNode() : config_(), simpleId_(0) {}
 
-    HistoryNode(edm::ProcessConfiguration const& iConfig,
-                unsigned int iSimpleId,
-                bool printHardwareResourcesDescription)
-        : config_(iConfig),
-          simpleId_(iSimpleId),
-          printHardwareResourcesDescription_(printHardwareResourcesDescription) {}
+    HistoryNode(edm::ProcessConfiguration const& iConfig, unsigned int iSimpleId)
+        : config_(iConfig), simpleId_(iSimpleId) {}
 
     void addChild(HistoryNode const& child) { children_.push_back(child); }
 
@@ -83,21 +79,9 @@ namespace {
     const_iterator end() const { return children_.end(); }
 
     void print(std::ostream& os) const {
+      // TODO: add printout of HardwareResourcesDescription
       os << config_.processName() << " '" << config_.releaseVersion() << "' [" << simpleId_ << "]  ("
-         << config_.parameterSetID() << ")";
-      if (printHardwareResourcesDescription_) {
-        auto const& hwresources = config_.hardwareResourcesDescription();
-        os << "  (" << hwresources.microarchitecture;
-        if (not hwresources.selectedAccelerators.empty()) {
-          os << "; " << hwresources.selectedAccelerators.front();
-          for (auto it = hwresources.selectedAccelerators.begin() + 1; it != hwresources.selectedAccelerators.end();
-               ++it) {
-            os << "," << *it;
-          }
-        }
-        os << ")";
-      }
-      os << std::endl;
+         << config_.parameterSetID() << ")" << std::endl;
     }
 
     void printHistory(std::string const& iIndent = std::string("  ")) const;
@@ -119,8 +103,7 @@ namespace {
   private:
     edm::ProcessConfiguration config_;
     std::vector<HistoryNode> children_;
-    unsigned int simpleId_ = 0;
-    bool printHardwareResourcesDescription_ = false;
+    unsigned int simpleId_;
   };
 
   std::ostream& operator<<(std::ostream& os, HistoryNode const& node) {
@@ -311,6 +294,7 @@ void HistoryNode::printTopLevelPSetsHistory(ParameterSetMap const& iPSM,
       appendToSet(namesToExclude, processConfig.getParameter<std::vector<std::string>>("@all_modules"));
       appendToSet(namesToExclude, processConfig.getParameter<std::vector<std::string>>("@all_sources"));
       appendToSet(namesToExclude, processConfig.getParameter<std::vector<std::string>>("@all_loopers"));
+      //appendToSet(namesToExclude,processConfig.getParameter<std::vector<std::string> >("@all_subprocesses"));//untracked
       appendToSet(namesToExclude, processConfig.getParameter<std::vector<std::string>>("@all_esmodules"));
       appendToSet(namesToExclude, processConfig.getParameter<std::vector<std::string>>("@all_essources"));
       appendToSet(namesToExclude, processConfig.getParameter<std::vector<std::string>>("@all_esprefers"));
@@ -463,8 +447,7 @@ public:
                    std::vector<std::string> const& findMatch,
                    bool dontPrintProducts,
                    std::string const& dumpPSetID,
-                   int productIDEntry,
-                   bool printHardwareResourcesDescription);
+                   int productIDEntry);
 
   ProvenanceDumper(ProvenanceDumper const&) = delete;             // Disallow copying and moving
   ProvenanceDumper& operator=(ProvenanceDumper const&) = delete;  // Disallow copying and moving
@@ -506,7 +489,6 @@ private:
   bool dontPrintProducts_;
   std::string dumpPSetID_;
   int const productIDEntry_;
-  bool const printHardwareResourcesDescription_;
 
   void work_();
   void dumpProcessHistory_();
@@ -526,8 +508,7 @@ ProvenanceDumper::ProvenanceDumper(std::string const& filename,
                                    std::vector<std::string> const& findMatch,
                                    bool dontPrintProducts,
                                    std::string const& dumpPSetID,
-                                   int productIDEntry,
-                                   bool printHardwareResourcesDescription)
+                                   int productIDEntry)
     : filename_(filename),
       inputFile_(makeTFile(filename)),
       exitCode_(0),
@@ -543,8 +524,7 @@ ProvenanceDumper::ProvenanceDumper(std::string const& filename,
       findMatch_(findMatch),
       dontPrintProducts_(dontPrintProducts),
       dumpPSetID_(dumpPSetID),
-      productIDEntry_(productIDEntry),
-      printHardwareResourcesDescription_(printHardwareResourcesDescription) {}
+      productIDEntry_(productIDEntry) {}
 
 void ProvenanceDumper::dump() { work_(); }
 
@@ -634,7 +614,7 @@ void ProvenanceDumper::dumpProcessHistory_() {
           id = 1;
           simpleIDs[pc.id()] = id;
         }
-        parent->addChild(HistoryNode(pc, id, printHardwareResourcesDescription_));
+        parent->addChild(HistoryNode(pc, id));
         parent = parent->lastChildAddress();
       } else {
         //see if this is unique
@@ -648,7 +628,7 @@ void ProvenanceDumper::dumpProcessHistory_() {
         }
         if (isUnique) {
           simpleIDs[pc.id()] = parent->size() + 1;
-          parent->addChild(HistoryNode(pc, simpleIDs[pc.id()], printHardwareResourcesDescription_));
+          parent->addChild(HistoryNode(pc, simpleIDs[pc.id()]));
           parent = parent->lastChildAddress();
         }
       }
@@ -1151,7 +1131,6 @@ static char const* const kFileNameOpt = "input-file";
 static char const* const kDumpPSetIDOpt = "dumpPSetID";
 static char const* const kDumpPSetIDCommandOpt = "dumpPSetID,i";
 static char const* const kProductIDEntryOpt = "productIDEntry";
-static char const* const kHardwareOpt = "hardware";
 
 int main(int argc, char* argv[]) {
   using namespace boost::program_options;
@@ -1179,9 +1158,7 @@ int main(int argc, char* argv[]) {
       "print the parameter set associated with the parameter set ID string (and print nothing else)")(
       kProductIDEntryOpt,
       value<int>(),
-      "show ProductID instead of BranchID using the specified entry in the Events tree")(
-      kHardwareOpt,
-      "include hardware provenance");
+      "show ProductID instead of BranchID using the specified entry in the Events tree");
   // clang-format on
 
   //we don't want users to see these in the help messages since this
@@ -1293,11 +1270,6 @@ int main(int argc, char* argv[]) {
     }
   }
 
-  bool printHardwareResourcesDescription = false;
-  if (vm.count(kHardwareOpt)) {
-    printHardwareResourcesDescription = true;
-  }
-
   //silence ROOT warnings about missing dictionaries
   gErrorIgnoreLevel = kError;
 
@@ -1311,8 +1283,7 @@ int main(int argc, char* argv[]) {
                           findMatch,
                           dontPrintProducts,
                           dumpPSetID,
-                          productIDEntry,
-                          printHardwareResourcesDescription);
+                          productIDEntry);
   int exitCode(0);
   try {
     dumper.dump();

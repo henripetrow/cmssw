@@ -20,7 +20,7 @@
 #include "FWCore/Framework/interface/ProductResolversFactory.h"
 #include "DataFormats/Provenance/interface/BranchIDListHelper.h"
 #include "DataFormats/Provenance/interface/ModuleDescription.h"
-#include "FWCore/Framework/interface/SignallingProductRegistryFiller.h"
+#include "FWCore/Framework/interface/SignallingProductRegistry.h"
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
 #include "FWCore/ServiceRegistry/interface/ActivityRegistry.h"
 #include "FWCore/ServiceRegistry/interface/Service.h"
@@ -31,8 +31,8 @@
 #include "FWCore/Utilities/interface/TypeID.h"
 #include "FWCore/Version/interface/GetReleaseVersion.h"
 
-#include "FWCore/AbstractServices/interface/RandomNumberGenerator.h"
 #include "FWCore/ServiceRegistry/interface/Service.h"
+#include "FWCore/Utilities/interface/RandomNumberGenerator.h"
 #include "FWCore/Utilities/interface/Exception.h"
 
 #include <memory>
@@ -47,7 +47,7 @@ namespace edm {
   // Constructor
   // make secondary input source
   SecondaryProducer::SecondaryProducer(ParameterSet const& pset)
-      : productRegistry_(std::make_shared<ProductRegistry>()),
+      : productRegistry_(std::make_shared<SignallingProductRegistry>()),
         secInput_(makeSecInput(pset)),
         processConfiguration_(std::make_unique<ProcessConfiguration>(
             std::string("PROD"), getReleaseVersion(), HardwareResourcesDescription())),
