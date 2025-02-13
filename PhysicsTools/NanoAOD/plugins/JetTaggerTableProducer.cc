@@ -275,7 +275,6 @@ void JetTaggerTableProducer<T>::produce(edm::Event &iEvent, const edm::EventSetu
                 break;
             }
           }
-          ranked_sv_features.clear();
           ranked_sv_features = {highest_pT, highest_IP};
         }
       } else {
