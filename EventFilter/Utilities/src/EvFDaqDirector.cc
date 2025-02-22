@@ -108,8 +108,7 @@ namespace evf {
         throw cms::Exception("EvFDaqDirector") << "fileBrokerHost parameter is not valid or empty";
 
       resolver_ = std::make_unique<boost::asio::ip::tcp::resolver>(io_service_);
-      endpoint_iterator_ = std::make_unique<boost::asio::ip::tcp::resolver::results_type>(
-          resolver_->resolve(fileBrokerHost_, fileBrokerPort_));
+      endpoint_iterator_ = std::make_unique<boost::asio::ip::tcp::resolver::results_type>(resolver_->resolve(fileBrokerHost_, fileBrokerPort_));
       socket_ = std::make_unique<boost::asio::ip::tcp::socket>(io_service_);
     }
 
