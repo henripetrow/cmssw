@@ -1,13 +1,13 @@
 # hltGetConfiguration /dev/CMSSW_15_0_0/Fake2 --full --data --type Fake2 --unprescale --process HLTFake2 --globaltag auto:run2_hlt_Fake2 --input file:RelVal_Raw_Fake2_DATA.root
 
-# /dev/CMSSW_15_0_0/Fake2/V10 (CMSSW_15_0_4_patch2)
+# /dev/CMSSW_15_0_0/Fake2/V8 (CMSSW_15_0_2)
 
 import FWCore.ParameterSet.Config as cms
 
 process = cms.Process( "HLTFake2" )
 
 process.HLTConfigVersion = cms.PSet(
-  tableName = cms.string("/dev/CMSSW_15_0_0/Fake2/V10")
+  tableName = cms.string("/dev/CMSSW_15_0_0/Fake2/V8")
 )
 
 process.streams = cms.PSet(  A = cms.vstring( 'InitialPD' ) )
@@ -23,24 +23,25 @@ process.GlobalParametersRcdSource = cms.ESSource( "EmptyESSource",
 process.GlobalTag = cms.ESSource( "PoolDBESSource",
     DBParameters = cms.PSet( 
       authenticationPath = cms.untracked.string( "." ),
-      messageLevel = cms.untracked.int32( 0 )
+      connectionRetrialTimeOut = cms.untracked.int32( 60 ),
+      idleConnectionCleanupPeriod = cms.untracked.int32( 10 ),
+      messageLevel = cms.untracked.int32( 0 ),
+      enablePoolAutomaticCleanUp = cms.untracked.bool( False ),
+      enableConnectionSharing = cms.untracked.bool( True ),
+      enableReadOnlySessionOnUpdateConnection = cms.untracked.bool( False ),
+      connectionTimeOut = cms.untracked.int32( 0 ),
+      connectionRetrialPeriod = cms.untracked.int32( 10 )
     ),
     connect = cms.string( "frontier://FrontierProd/CMS_CONDITIONS" ),
     globaltag = cms.string( "80X_dataRun2_HLT_v12" ),
     snapshotTime = cms.string( "" ),
-    frontierKey = cms.untracked.string( "" ),
     toGet = cms.VPSet( 
     ),
-    JsonDumpFileName = cms.untracked.string( "" ),
     DumpStat = cms.untracked.bool( False ),
     ReconnectEachRun = cms.untracked.bool( False ),
     RefreshAlways = cms.untracked.bool( False ),
     RefreshEachRun = cms.untracked.bool( False ),
-    RefreshOpenIOVs = cms.untracked.bool( False ),
-    pfnPostfix = cms.untracked.string( "" ),
-    pfnPrefix = cms.untracked.string( "" ),
-    recordsToDebug = cms.untracked.vstring(  ),
-    appendToDataLabel = cms.string( "" )
+    RefreshOpenIOVs = cms.untracked.bool( False )
 )
 
 process.GlobalParameters = cms.ESProducer( "StableParametersTrivialProducer",
