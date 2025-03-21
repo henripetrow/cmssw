@@ -53,7 +53,15 @@ if options.scenario not in valid_scenarios:
     print(valid_scenarios)
     exit(1)
 
-process = cms.Process("SagittaBiasNtuplizer")
+###################################################################
+# Set default phase-2 settings
+###################################################################
+if("Run4" in options.globalTag):
+    import Configuration.Geometry.defaultPhase2ConditionsEra_cff as _settings
+    _PH2_GLOBAL_TAG, _PH2_ERA = _settings.get_era_and_conditions(_settings.DEFAULT_VERSION)
+    process = cms.Process("SagittaBiasNtuplizer",_PH2_ERA)
+else:
+    process = cms.Process("SagittaBiasNtuplizer")
 
 ###################################################################
 # Set the process to run multi-threaded
@@ -82,7 +90,11 @@ process.MessageLogger.cout = cms.untracked.PSet(
 ###################################################################
 process.load("RecoVertex.BeamSpotProducer.BeamSpot_cff")
 process.load("Configuration.StandardSequences.Services_cff")
-process.load("Configuration.StandardSequences.GeometryRecoDB_cff")
+if("Run4" in options.globalTag):
+     process.load('Configuration.Geometry.GeometryExtendedRun4DefaultReco_cff')
+else:
+     process.load("Configuration.Geometry.GeometryRecoDB_cff")
+
 process.load('Configuration.StandardSequences.MagneticField_cff')
 process.load("CondCore.CondDB.CondDB_cfi")
 
