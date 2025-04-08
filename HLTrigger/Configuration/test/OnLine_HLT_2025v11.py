@@ -1,6 +1,6 @@
 # hltGetConfiguration /frozen/2024/2e34/v1.4/CMSSW_15_0_X/HLT --full --data --type 2024v14 --unprescale --process HLT2024v14 --globaltag auto:run3_hlt_2024v14 --input file:RelVal_Raw_2024v14_DATA.root
 
-# /frozen/2024/2e34/v1.4/CMSSW_15_0_X/HLT/V9 (CMSSW_15_0_2)
+# /frozen/2024/2e34/v1.4/CMSSW_15_0_X/HLT/V10 (CMSSW_15_0_4)
 
 import FWCore.ParameterSet.Config as cms
 
@@ -9,7 +9,7 @@ process = cms.Process( "HLT2024v14" )
 process.load("Configuration.StandardSequences.Accelerators_cff")
 
 process.HLTConfigVersion = cms.PSet(
-  tableName = cms.string("/frozen/2024/2e34/v1.4/CMSSW_15_0_X/HLT/V9")
+  tableName = cms.string("/frozen/2024/2e34/v1.4/CMSSW_15_0_X/HLT/V10")
 )
 
 process.HLTIter4PSetTrajectoryBuilderIT = cms.PSet( 
@@ -4020,19 +4020,13 @@ process.GlobalParametersRcdSource = cms.ESSource( "EmptyESSource",
 )
 process.GlobalTag = cms.ESSource( "PoolDBESSource",
     DBParameters = cms.PSet( 
-      connectionRetrialTimeOut = cms.untracked.int32( 60 ),
-      idleConnectionCleanupPeriod = cms.untracked.int32( 10 ),
-      enableReadOnlySessionOnUpdateConnection = cms.untracked.bool( False ),
-      enablePoolAutomaticCleanUp = cms.untracked.bool( False ),
       messageLevel = cms.untracked.int32( 0 ),
-      authenticationPath = cms.untracked.string( "." ),
-      connectionRetrialPeriod = cms.untracked.int32( 10 ),
-      connectionTimeOut = cms.untracked.int32( 0 ),
-      enableConnectionSharing = cms.untracked.bool( True )
+      authenticationPath = cms.untracked.string( "." )
     ),
     connect = cms.string( "frontier://FrontierProd/CMS_CONDITIONS" ),
     globaltag = cms.string( "None" ),
     snapshotTime = cms.string( "" ),
+    frontierKey = cms.untracked.string( "" ),
     toGet = cms.VPSet( 
       cms.PSet(  refreshTime = cms.uint64( 2 ),
         record = cms.string( "BeamSpotOnlineLegacyObjectsRcd" )
@@ -4047,13 +4041,16 @@ process.GlobalTag = cms.ESSource( "PoolDBESSource",
         record = cms.string( "LHCInfoPerFillRcd" )
       )
     ),
+    JsonDumpFileName = cms.untracked.string( "" ),
     DumpStat = cms.untracked.bool( False ),
     ReconnectEachRun = cms.untracked.bool( True ),
     RefreshAlways = cms.untracked.bool( False ),
     RefreshEachRun = cms.untracked.bool( True ),
     RefreshOpenIOVs = cms.untracked.bool( False ),
     pfnPostfix = cms.untracked.string( "" ),
-    pfnPrefix = cms.untracked.string( "" )
+    pfnPrefix = cms.untracked.string( "" ),
+    recordsToDebug = cms.untracked.vstring(  ),
+    appendToDataLabel = cms.string( "" )
 )
 process.HcalTimeSlewEP = cms.ESSource( "HcalTimeSlewEP",
     appendToDataLabel = cms.string( "HBHE" ),
