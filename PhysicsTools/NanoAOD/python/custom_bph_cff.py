@@ -1,5 +1,12 @@
+from __future__ import print_function
 import FWCore.ParameterSet.Config as cms
+from PhysicsTools.NanoAOD.common_cff import *
+from PhysicsTools.NanoAOD.globals_cff import *
 from PhysicsTools.NanoAOD.nano_cff import *
+from PhysicsTools.NanoAOD.vertices_cff import *
+from PhysicsTools.NanoAOD.NanoAODEDMEventContent_cff import *
+from PhysicsTools.NanoAOD.triggerObjects_cff import *
+
 
 ##for gen and trigger muon
 from PhysicsTools.BPHNano.pverticesBPH_cff import *
@@ -15,6 +22,21 @@ from PhysicsTools.BPHNano.V0_cff import *
 from PhysicsTools.BPHNano.BToKLL_cff import *
 from PhysicsTools.BPHNano.BToTrkTrkLL_cff import *
 from PhysicsTools.BPHNano.BToV0LL_cff import *
+
+
+vertexTable.svSrc = cms.InputTag("slimmedSecondaryVertices")
+
+
+
+nanoSequence = cms.Sequence(nanoMetadata + 
+                            cms.Sequence(vertexTask) +
+                            cms.Sequence(globalTablesTask)+ 
+                            cms.Sequence(vertexTablesTask) +
+                            cms.Sequence(pVertexTable)#+
+#                            cms.Sequence(nanoSequenceCommon)                           
+                          )
+
+
 
 def nanoAOD_customizeMC(process):
     process.load('PhysicsTools.BPHNano.particlelevelBPH_cff')
@@ -53,7 +75,7 @@ def nanoAOD_customizeBToKLL(process):
 def nanoAOD_customizeBToTrkTrkLL(process):
     process.load('PhysicsTools.BPHNano.DiTrack_cff')    
     process.load('PhysicsTools.BPHNano.BToTrkTrkLL_cff')    
-    process.nanoSequence = cms.Sequence( process.nanoSequence + DiTrackSequence + BToTrkTrkMuMuSequence + BToTrkTrkMuMuTables  )
+    process.nanoSequence = cms.Sequence( process.nanoSequence + DiTrackSequence + DiTrackTables+ BToTrkTrkMuMuSequence + BToTrkTrkMuMuTables  )
     return process
 
 
@@ -86,8 +108,8 @@ def nanoAOD_customizeBPH(process):
     process.load('PhysicsTools.BPHNano.BToTrkTrkLL_cff')
     process.load('PhysicsTools.BPHNano.V0_cff')
     process.load('PhysicsTools.BPHNano.BToV0LL_cff')      
-    process.nanoSequenceMC = cms.Sequence(process.nanoSequenceMC +particleLevelBPHSequence + genParticleBPHSequence+ genParticleBPHTables + muonBPHSequenceMC + muonBPHTablesMC + MuMuSequence + MuMuTables + tracksBPHSequenceMC + tracksBPHTablesMC + BToKMuMuSequence + BToKMuMuTables + DiTrackSequence + BToTrkTrkMuMuSequence + BToTrkTrkMuMuTables + KshortToPiPiSequenceMC + KshortToPiPiTablesMC + BToKshortMuMuSequence + BToKshortMuMuTables +  LambdaToProtonPiSequenceMC + LambdaToProtonPiTablesMC + LambdabToLambdaMuMuSequence + LambdabToLambdaMuMuTables)
-    process.nanoSequence = cms.Sequence(process.nanoSequence + muonBPHSequence + muonBPHTables + MuMuSequence + MuMuTables + tracksBPHSequence + tracksBPHTables + BToKMuMuSequence + BToKMuMuTables + DiTrackSequence + BToTrkTrkMuMuSequence + BToTrkTrkMuMuTables + KshortToPiPiSequence + KshortToPiPiTables + BToKshortMuMuSequence + BToKshortMuMuTables +  LambdaToProtonPiSequence + LambdaToProtonPiTables + LambdabToLambdaMuMuSequence + LambdabToLambdaMuMuTables)
+    process.nanoSequenceMC = cms.Sequence(process.nanoSequenceMC +particleLevelBPHSequence + genParticleBPHSequence+ genParticleBPHTables + muonBPHSequenceMC + muonBPHTablesMC + MuMuSequence + MuMuTables + tracksBPHSequenceMC + tracksBPHTablesMC + BToKMuMuSequence + BToKMuMuTables + DiTrackSequence + DiTrackTables + BToTrkTrkMuMuSequence + BToTrkTrkMuMuTables + KshortToPiPiSequenceMC + KshortToPiPiTablesMC + BToKshortMuMuSequence + BToKshortMuMuTables +  LambdaToProtonPiSequenceMC + LambdaToProtonPiTablesMC + LambdabToLambdaMuMuSequence + LambdabToLambdaMuMuTables)
+    process.nanoSequence = cms.Sequence(process.nanoSequence + muonBPHSequence + muonBPHTables + MuMuSequence + MuMuTables + tracksBPHSequence + tracksBPHTables + BToKMuMuSequence + BToKMuMuTables + DiTrackSequence + DiTrackTables + BToTrkTrkMuMuSequence + BToTrkTrkMuMuTables + KshortToPiPiSequence + KshortToPiPiTables + BToKshortMuMuSequence + BToKshortMuMuTables +  LambdaToProtonPiSequence + LambdaToProtonPiTables + LambdabToLambdaMuMuSequence + LambdabToLambdaMuMuTables)
     return process
 
 

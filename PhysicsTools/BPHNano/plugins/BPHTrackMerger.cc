@@ -35,7 +35,6 @@ public:
         dileptonToken_(consumes<pat::CompositeCandidateCollection>(cfg.getParameter<edm::InputTag>("dileptons"))),
         muonToken_(consumes<pat::MuonCollection>(cfg.getParameter<edm::InputTag>("muons"))),
         eleToken_(consumes<pat::ElectronCollection>(cfg.getParameter<edm::InputTag>("electrons"))),
-        pvToken_(consumes<std::vector<reco::Vertex>>(cfg.getParameter<edm::InputTag>("pvSrc"))),
         maxDzDilep_(cfg.getParameter<double>("maxDzDilep")),
         dcaSig_(cfg.getParameter<double>("dcaSig")),
         track_selection_(cfg.getParameter<std::string>("trackSelection")) {
@@ -56,7 +55,6 @@ private:
   const edm::EDGetTokenT<pat::CompositeCandidateCollection> dileptonToken_;
   const edm::EDGetTokenT<pat::MuonCollection> muonToken_;
   const edm::EDGetTokenT<pat::ElectronCollection> eleToken_;
-  const edm::EDGetTokenT<std::vector<reco::Vertex>> pvToken_;
 
   // selections
   const double maxDzDilep_;
@@ -102,15 +100,10 @@ void BPHTrackMerger::produce(edm::StreamID, edm::Event &evt, edm::EventSetup con
    totalTracks.insert(totalTracks.end(),lostTracks->begin(),lostTracks->end());
   */
 
-  // Retrieve the primary vertex collection
-  edm::Handle<std::vector<reco::Vertex>> pvs;
-  evt.getByToken(pvToken_, pvs);
-
   std::vector<int> match_indices(totalTracks, -1);
   // for loop is better to be range based - especially for large ensembles
   for (unsigned int iTrk = 0; iTrk < totalTracks; ++iTrk) {
     const pat::PackedCandidate &trk = (iTrk < nTracks) ? (*tracks)[iTrk] : (*lostTracks)[iTrk - nTracks];
-
     // arranging cuts for speed
     if (!trk.hasTrackDetails())
       continue;
@@ -144,7 +137,6 @@ void BPHTrackMerger::produce(edm::StreamID, edm::Event &evt, edm::EventSetup con
     float DCABS = DCA.first;
     float DCABSErr = DCA.second;
     float DCASig = (DCABSErr != 0 && float(DCABSErr) == DCABSErr) ? fabs(DCABS / DCABSErr) : -1;
-
     if (DCASig > dcaSig_ && dcaSig_ > 0)
       continue;
 
@@ -177,9 +169,6 @@ void BPHTrackMerger::produce(edm::StreamID, edm::Event &evt, edm::EventSetup con
       }
     }
 
-    // IP
-    const reco::Vertex &pv0 = pvs->front();
-
     // output
     pat::CompositeCandidate pcand;
     pcand.setP4(trk.p4());
@@ -188,9 +177,9 @@ void BPHTrackMerger::produce(edm::StreamID, edm::Event &evt, edm::EventSetup con
     pcand.setPdgId(trk.pdgId());
     pcand.addUserInt("isPacked", (iTrk < nTracks));
     pcand.addUserInt("isLostTrk", (iTrk < nTracks) ? 0 : 1);
-    pcand.addUserFloat("dxy", trk.dxy(pv0.position()));
-    pcand.addUserFloat("dxyS", trk.dxy(pv0.position()) / trk.dxyError());
-    pcand.addUserFloat("dz", trk.dz(pv0.position()));
+    pcand.addUserFloat("dxy", trk.dxy());
+    pcand.addUserFloat("dxyS", trk.dxy() / trk.dxyError());
+    pcand.addUserFloat("dz", trk.dz());
     pcand.addUserFloat("dzS", trk.dz() / trk.dzError());
     pcand.addUserFloat("DCASig", DCASig);
     pcand.addUserFloat("dzTrg", dzTrg);

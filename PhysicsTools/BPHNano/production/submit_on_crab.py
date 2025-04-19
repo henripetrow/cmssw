@@ -30,7 +30,7 @@ def parse_args():
     parser.add_argument('-c', '--cmd', default='submit', choices = ['submit', 'status'], help= 'Crab command')
     parser.add_argument('-f', '--filter', default='*', help = 'filter samples, POSIX regular expressions allowed') 
     parser.add_argument('-w', '--workarea', default='BPHNANO_%s' % production_tag, help = 'Crab working area name')
-    parser.add_argument('-o', '--outputdir', default= '/store/group/cmst3/group/bpark/gmelachr/', help='LFN Output high-level directory: the LFN will be saved in outputdir+workarea ')
+    parser.add_argument('-o', '--outputdir', default= '/store/group/cmst3/group/bpark/gmelachr/cmssw_15_deactivate_fix_track', help='LFN Output high-level directory: the LFN will be saved in outputdir+workarea ')
     parser.add_argument('-s', '--site', default='T2_CH_CERN', help='T2 or T3 cite where user has access. To be checked with crab checkout')
     parser.add_argument('-t', '--tag', default=production_tag, help='Production Tag extra')
     parser.add_argument('-p', '--psetcfg', default="../test/run_bphNano_cfg.py", help='Plugin configuration file')
