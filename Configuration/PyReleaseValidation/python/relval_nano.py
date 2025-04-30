@@ -265,8 +265,7 @@ steps['scoutingNANO_data14.0'] = merge([{'-s': 'NANO:@Scout'},
 
 # Process.options.TryToContinue = cms.untracked.vstring(\'ProductNotFound\') is needed here because some events in ScoutingPFMonitor in 2024 do not contain scouting objects.
 # This should be fixed in 2025 (https://its.cern.ch/jira/browse/CMSHLT-3331) so customise_commands won't be needed for 2025 workflow.
-steps['scoutingNANO_withPrompt_data14.0'] = merge([{'-s': 'NANO:@Prompt+@Scout',
-                                                   '--customise_commands': '"process.options.TryToContinue = cms.untracked.vstring(\'ProductNotFound\')"'},
+steps['scoutingNANO_withPrompt_data14.0'] = merge([{'-s': 'NANO:@Prompt+@ScoutMonitor'}, 
                                                    steps['NANO_data14.0']])
 
 # DPG custom NANO
@@ -382,7 +381,6 @@ workflows[_wfn()] = ['NANOdata140Xrun3', ['MuonEG2024MINIAOD14.0', 'NANO_data14.
 
 # POG/PAG custom NANOs, MC
 _wfn.subnext()
-workflows[_wfn()] = ['BPHNANOmc140X', ['TTbarMINIAOD14.0', 'BPHNANO_mc14.0']]
 workflows[_wfn()] = ['muPOGNANOmc140X', ['TTbarMINIAOD14.0', 'muPOGNANO_mc14.0']]
 workflows[_wfn()] = ['EGMNANOmc140X', ['TTbarMINIAOD14.0', 'EGMNANO_mc14.0']]
 workflows[_wfn()] = ['BTVNANOmc140X', ['TTbarMINIAOD14.0', 'BTVNANO_mc14.0']]
@@ -395,7 +393,6 @@ workflows[_wfn()] = ['BPHNANOmc140X', ['TTbarMINIAOD14.0', 'BPHNANO_mc14.0']]
 
 # POG/PAG custom NANOs, data
 _wfn.subnext()
-workflows[_wfn()] = ['BPHNANOdata140Xrun3', ['MuonEG2024MINIAOD14.0', 'BPHNANO_data14.0']]
 workflows[_wfn()] = ['muPOGNANO140Xrun3', ['MuonEG2024MINIAOD14.0', 'muPOGNANO_data14.0']]
 workflows[_wfn()] = ['EGMNANOdata140Xrun3', ['MuonEG2024MINIAOD14.0', 'EGMNANO_data14.0']]
 workflows[_wfn()] = ['BTVNANOdata140Xrun3', ['MuonEG2024MINIAOD14.0', 'BTVNANO_data14.0']]
