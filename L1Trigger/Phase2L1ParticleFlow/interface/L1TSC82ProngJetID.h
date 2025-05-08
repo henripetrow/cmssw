@@ -14,16 +14,14 @@
 
 class L1TSC82ProngJetID {
 public:
-  L1TSC82ProngJetID(const std::shared_ptr<hls4mlEmulator::Model> model, int iNParticles, bool debug);
+  L1TSC82ProngJetID(const std::shared_ptr<hls4mlEmulator::Model> model, int iNParticles);
 
-  typedef ap_fixed<12, 4, AP_RND, AP_SAT, 0> inputtype;
-  typedef std::array<ap_ufixed<16, 6, AP_RND, AP_SAT, 0>, 2> classtype;
-//  typedef std::array<ap_fixed<16, 6>, 1> regressiontype;
-//  typedef std::pair<regressiontype, classtype> pairtype;
+  typedef ap_fixed<24,12, AP_RND, AP_SAT, 0> inputtype;
+  typedef std::array<ap_ufixed<16, 6, AP_RND, AP_SAT, 0>, 2> prong_score;
 
   void setNNVectorVar();
   std::vector<float> EvaluateNNFixed();
-  std::vector<float> computeFixed(const l1t::PFJet &iJet, bool useRawPt);
+  std::vector<float> computeFixed(const l1t::PFJet &iJet);
 
 private:
   std::vector<inputtype> NNvectorVar_;
@@ -39,15 +37,10 @@ private:
   unique_ptr<float[]> fPuppi_weight_;
   unique_ptr<int[]> fEmID_;
   unique_ptr<int[]> fId_;
-
-//  unique_ptr<float[]> fDxy_;
-//  unique_ptr<float[]> fQuality_;
-//  unique_ptr<int[]> fCharge_;
-
-
+  unique_ptr<int[]> fCharge_;
 
   std::shared_ptr<hls4mlEmulator::Model> modelRef_;
 
-  bool isDebugEnabled_;
+  //bool isDebugEnabled_;
 };
 #endif

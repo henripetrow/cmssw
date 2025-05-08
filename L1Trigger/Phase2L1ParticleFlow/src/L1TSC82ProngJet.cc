@@ -53,7 +53,7 @@ void L1TSC82ProngJetID::setNNVectorVar() {
 
 std::vector<float> L1TSC82ProngJetID::EvaluateNNFixed() {
   const int NInputs = 320;
-  classtype classresult;
+  prong_score prong_scores;
   //regressiontype regressionresult;
 
   inputtype fillzero = 0.0;
@@ -69,18 +69,18 @@ std::vector<float> L1TSC82ProngJetID::EvaluateNNFixed() {
 
   modelRef_->prepare_input(modelInput);
   modelRef_->predict();
-  modelRef_->read_result(&classresult);
+  modelRef_->read_result(&prong_scores);
 
-  std::vector<float> classresult_;
+  std::vector<float> prong_scores_;
   for (unsigned int i = 0; i < 2; i++) {
-    classresult_.push_back(classresult[i].to_float());
+    prong_scores_.push_back(prong_scores[i].to_float());
   }
 
   //modelResult_.push_back(modelResult.first[0].to_float());
-  return classresult_;
+  return prong_scores_;
 }  //end EvaluateNNFixed
 
-std::vector<float> L1TSC82ProngJetID::computeFixed(const l1t::PFJet &iJet, bool useRawPt) {
+std::vector<float> L1TSC82ProngJetID::computeFixed(const l1t::PFJet &iJet) {
   for (int i0 = 0; i0 < fNParticles_; i0++) {
     fPt_.get()[i0] = 0;
     fZ0_.get()[i0] = 0;
