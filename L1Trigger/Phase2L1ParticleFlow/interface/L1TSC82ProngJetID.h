@@ -1,5 +1,5 @@
-#ifndef L1TRIGGER_PHASE2L1PARTICLEFLOWS_L1TSC82ProngJetID_H
-#define L1TRIGGER_PHASE2L1PARTICLEFLOWS_L1TSC82ProngJetID_H
+#ifndef L1TRIGGER_PHASE2L1PARTICLEFLOWS_L1TSC82PRONGJETID_H
+#define L1TRIGGER_PHASE2L1PARTICLEFLOWS_L1TSC82PRONGJETID_H
 
 #include "DataFormats/L1TParticleFlow/interface/PFJet.h"
 #include <memory>
@@ -16,8 +16,13 @@ public:
   typedef ap_fixed<24, 12, AP_RND, AP_SAT, 0> inputtype;
   typedef ap_ufixed<20, 10, AP_RND, AP_SAT, 0> prong_score;
 
+
+  static constexpr unsigned int kNInputs = 160;
+  static constexpr unsigned int kFeaturesPerParticle = 20;
+
+
   void setNNVectorVar();
-  std::vector<float> EvaluateNNFixed();
+  std::vector<float> EvaluateNNFixed() const;
   std::vector<float> computeFixed(const l1t::PFJet &iJet);
 
 private:

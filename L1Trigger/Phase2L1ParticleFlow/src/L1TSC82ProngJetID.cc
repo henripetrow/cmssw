@@ -51,9 +51,9 @@ void L1TSC82ProngJetID::setNNVectorVar() {
   }
 }
 
-std::vector<float> L1TSC82ProngJetID::EvaluateNNFixed() {
-  const unsigned int NInputs = 160;
-  const unsigned int FeaturesPerParticle = 20;
+std::vector<float> L1TSC82ProngJetID::EvaluateNNFixed() const {
+  const unsigned int NInputs = L1TSC82ProngJetID::kNInputs;
+  const unsigned int FeaturesPerParticle = L1TSC82ProngJetID::kFeaturesPerParticle;
 
   if (fNParticles_ * FeaturesPerParticle != NInputs) {
     throw std::runtime_error(
@@ -75,10 +75,11 @@ std::vector<float> L1TSC82ProngJetID::EvaluateNNFixed() {
   modelRef_->prepare_input(modelInput);
   modelRef_->predict();
   modelRef_->read_result(&prong_scores);
-
+  cout << prong_scores.to_float();
   std::vector<float> prong_score_;
   prong_score_.push_back(prong_scores.to_float());
 
+ 
   return prong_score_;
 }  //end EvaluateNNFixed
 
@@ -130,7 +131,7 @@ std::vector<float> L1TSC82ProngJetID::computeFixed(const l1t::PFJet &iJet) {
     fIs_filled_.get()[i0] = 1;
 
     float massCand = 0.13f;
-    if (abs(iParts[i0]->charge())) {
+    if (std::abs(iParts[i0]->charge())) {
       if ((iParts[i0]->id() == l1t::PFCandidate::Muon)) {
         massCand = 0.105;
       } else if ((iParts[i0]->id() == l1t::PFCandidate::Electron)) {

@@ -20,7 +20,6 @@
 #include "ap_fixed.h"
 #include "hls4ml/emulator.h"
 
-using namespace l1t;
 
 class L1TSC82ProngJetProducer : public edm::stream::EDProducer<> {
 public:
@@ -59,7 +58,6 @@ void L1TSC82ProngJetProducer::produce(edm::Event& iEvent, const edm::EventSetup&
   edm::Handle<edm::View<l1t::PFJet>> jets;
   iEvent.getByToken(jets_, jets);
   std::vector<l1t::PFJet> taggedJets;
-
   for (const auto& srcjet : *jets) {
     l1ct::Jet ctHWJet = l1ct::Jet::unpack(srcjet.encodedJet(l1t::PFJet::HWEncoding::CT));
 
@@ -74,7 +72,6 @@ void L1TSC82ProngJetProducer::produce(edm::Event& iEvent, const edm::EventSetup&
         srcjet.pt(), srcjet.eta(), srcjet.phi(), srcjet.mass(), gtwHWJet.v3.pt.V, gtwHWJet.v3.eta.V, gtwHWJet.v3.phi.V);
 
     std::vector<l1ct::JetTagClass> classes{l1ct::JetTagClass(l1ct::JetTagClass::JetTagClassValue::nprong)};
-
     edmJet.addTagScores(JetProngScore_float, classes, 1.);
     edmJet.setEncodedJet(l1t::PFJet::HWEncoding::CT, ctHWJet.pack());
     edmJet.setEncodedJet(l1t::PFJet::HWEncoding::GTWide, gtwHWJet.pack());
